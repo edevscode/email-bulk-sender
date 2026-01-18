@@ -105,7 +105,7 @@ def prepare_attachments(uploaded_files: List) -> List[Tuple[str, bytes, str]]:
                     mime_type = "application/octet-stream"
                 attachments.append((file.name, file.read(), mime_type))
             else:
-                st.warning(f"⚠️ Skipping {file.name}: file type '{file_ext}' not allowed.")
+                st.warning(f"Skipping {file.name}: file type '{file_ext}' not allowed.")
     return attachments
 
 def build_email_message(
@@ -183,12 +183,11 @@ def send_email_smtp(
 def main():
     st.set_page_config(
         page_title="Bulk Email Sender",
-        page_icon="📧",
         layout="wide",
         initial_sidebar_state="expanded"
     )
 
-    st.title("📧 Bulk Email Sender")
+    st.title("Bulk Email Sender")
     st.markdown("Send personalized emails to multiple recipients safely with one click.")
 
     # Initialize session state
@@ -201,7 +200,7 @@ def main():
     # SIDEBAR: GMAIL CREDENTIALS
     # ========================================================================
     with st.sidebar:
-        st.header("📧 Gmail Configuration")
+        st.header("Gmail Configuration")
         st.info(
             "**App Password Required:**\n"
             "1. Go to [myaccount.google.com/security](https://myaccount.google.com/security)\n"
@@ -222,7 +221,7 @@ def main():
         )
 
         st.divider()
-        st.header("⚙️ Email Settings")
+        st.header("Email Settings")
         send_delay = st.slider(
             "Delay between emails (seconds)",
             min_value=1,
@@ -244,7 +243,7 @@ def main():
         )
 
         st.divider()
-        st.header("📝 Email Format")
+        st.header("Email Format")
         is_html = st.checkbox(
             "Send as HTML",
             value=False,
@@ -263,7 +262,7 @@ def main():
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.header("📨 Compose Email")
+        st.header("Compose Email")
         subject = st.text_input(
             "Subject",
             placeholder="e.g., Join Our Team - Opportunity",
@@ -271,7 +270,7 @@ def main():
         )
 
     with col2:
-        st.header("📎 Attachments & Data")
+        st.header("Attachments & Data")
         attachment_files = st.file_uploader(
             "Attach Files",
             type=ALLOWED_ATTACHMENT_TYPES,
@@ -287,14 +286,14 @@ def main():
     )
 
     st.info(
-        "💡 **Template Variables:** You can use `{{name}}`, `{{first_name}}`, "
+        "**Template Variables:** You can use `{{name}}`, `{{first_name}}`, "
         "`{{company}}`, `{{email}}` if those columns exist in your Excel file."
     )
 
     # ========================================================================
     # EXCEL UPLOAD & PREVIEW
     # ========================================================================
-    st.header("📊 Recipients (Excel)")
+    st.header("Recipients (Excel)")
     excel_file = st.file_uploader(
         "Upload Excel File (.xlsx)",
         type=["xlsx"],
@@ -309,15 +308,15 @@ def main():
     if excel_file:
         try:
             df_recipients = pd.read_excel(excel_file)
-            st.success(f"✅ Loaded {len(df_recipients)} rows")
+            st.success(f"Loaded {len(df_recipients)} rows")
 
             # Auto-detect email column
             detected_col = detect_email_column(df_recipients)
             if detected_col:
                 email_column = detected_col
-                st.success(f"✅ Auto-detected email column: **{email_column}**")
+                st.success(f"Auto-detected email column: **{email_column}**")
             else:
-                st.warning("⚠️ Could not auto-detect email column.")
+                st.warning("Could not auto-detect email column.")
                 email_column = st.selectbox(
                     "Select the email column",
                     options=df_recipients.columns,
@@ -328,13 +327,13 @@ def main():
             personalization_columns = get_personalization_columns(df_recipients)
             if personalization_columns:
                 enable_personalize = st.checkbox(
-                    f"✨ Personalize greeting (found: {', '.join(personalization_columns)})",
+                    f"Personalize greeting (found: {', '.join(personalization_columns)})",
                     value=False,
                     help="Replace {{variable}} with actual values from Excel"
                 )
 
             # Email selection options
-            st.subheader("📋 Select Recipients")
+            st.subheader("Select Recipients")
             col_sel1, col_sel2, col_sel3 = st.columns([1, 1, 0.8])
             
             # Initialize session state for selections
@@ -344,7 +343,7 @@ def main():
             unique_emails = sorted(df_recipients[email_column].unique())
             
             with col_sel1:
-                if st.button("✅ Select All", use_container_width=True):
+                if st.button("Select All", use_container_width=True):
                     st.session_state.selected_emails = set(unique_emails)
                     # Also update individual checkbox states
                     for email in unique_emails:
@@ -352,7 +351,7 @@ def main():
                     st.rerun()
             
             with col_sel2:
-                if st.button("❌ Deselect All", use_container_width=True):
+                if st.button("Deselect All", use_container_width=True):
                     st.session_state.selected_emails = set()
                     # Also clear individual checkbox states
                     for email in unique_emails:
@@ -363,7 +362,7 @@ def main():
             counter_placeholder = col_sel3.empty()
             
             # Search bar for filtering emails
-            search_query = st.text_input("🔍 Search emails:", placeholder="Type email to filter...")
+            search_query = st.text_input("Search emails:", placeholder="Type email to filter...")
             
             # Filter emails based on search query
             filtered_emails = [email for email in unique_emails if search_query.lower() in email.lower()] if search_query else unique_emails
@@ -399,17 +398,17 @@ def main():
             # Filter dataframe to selected emails only
             if selected_emails:
                 df_recipients_filtered = df_recipients[df_recipients[email_column].isin(selected_emails)].copy()
-                st.success(f"✅ Will send to {len(df_recipients_filtered)} of {len(df_recipients)} recipients")
+                st.success(f"Will send to {len(df_recipients_filtered)} of {len(df_recipients)} recipients")
             else:
                 df_recipients_filtered = df_recipients.copy()
-                st.warning("⚠️ No recipients selected!")
+                st.warning("No recipients selected!")
 
             # Preview first few rows
-            with st.expander("👀 Preview Data (first 5 rows)"):
+            with st.expander("Preview Data (first 5 rows)"):
                 st.dataframe(df_recipients.head(5), use_container_width=True)
 
         except Exception as e:
-            st.error(f"❌ Error reading Excel: {str(e)}")
+            st.error(f"Error reading Excel: {str(e)}")
             df_recipients = None
 
     # ========================================================================
@@ -418,21 +417,21 @@ def main():
     def validate_inputs() -> Tuple[bool, str]:
         """Validate all inputs before sending."""
         if not from_email or "@" not in from_email:
-            return False, "❌ Valid Gmail address required"
+            return False, "Valid Gmail address required"
         if not app_password or len(app_password) < 16:
-            return False, "❌ App Password (16 chars) required"
+            return False, "App Password (16 chars) required"
         if not subject:
-            return False, "❌ Subject required"
+            return False, "Subject required"
         if not email_body:
-            return False, "❌ Email body required"
+            return False, "Email body required"
         if df_recipients is None or len(df_recipients) == 0:
-            return False, "❌ No recipients loaded"
+            return False, "No recipients loaded"
         if email_column is None:
-            return False, "❌ Email column not selected"
+            return False, "Email column not selected"
         if not selected_emails:
-            return False, "❌ No recipients selected"
+            return False, "No recipients selected"
         if len(df_recipients_filtered) > max_emails:
-            return False, f"❌ {len(df_recipients_filtered)} selected emails exceed limit of {max_emails}"
+            return False, f"{len(df_recipients_filtered)} selected emails exceed limit of {max_emails}"
         return True, ""
 
     # ========================================================================
@@ -441,7 +440,7 @@ def main():
     col_preview, col_send = st.columns([1, 1])
 
     with col_preview:
-        if st.button("👁️ Preview", use_container_width=True, type="secondary"):
+        if st.button("Preview", use_container_width=True, type="secondary"):
             valid, error_msg = validate_inputs()
             if not valid:
                 st.error(error_msg)
@@ -456,7 +455,7 @@ def main():
                 }
 
                 st.divider()
-                st.subheader(f"📋 Preview: First 3 of {len(df_recipients_filtered)} Selected Recipients")
+                st.subheader(f"Preview: First 3 of {len(df_recipients_filtered)} Selected Recipients")
                 for idx, email in enumerate(st.session_state.preview_data["recipients"], 1):
                     with st.expander(f"Email {idx}: {email}"):
                         row_data = {col: str(df_recipients_filtered[df_recipients_filtered[email_column] == email][col].values[0]) 
@@ -474,7 +473,7 @@ def main():
 
     with col_send:
         if st.button(
-            "🚀 Send All",
+            "Send All",
             use_container_width=True,
             type="primary",
             help="One-click send to all selected recipients"
@@ -505,12 +504,12 @@ def main():
     # ========================================================================
     if st.session_state.send_results is not None:
         st.divider()
-        st.header("📊 Send Results")
+        st.header("Send Results")
         results_df = pd.DataFrame(st.session_state.send_results)
         
-        success_count = (results_df["status"] == "✅ Sent").sum()
-        failed_count = (results_df["status"] == "❌ Failed").sum()
-        invalid_count = (results_df["status"] == "⚠️ Invalid Email").sum()
+        success_count = (results_df["status"] == "Sent").sum()
+        failed_count = (results_df["status"] == "Failed").sum()
+        invalid_count = (results_df["status"] == "Invalid Email").sum()
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -525,7 +524,7 @@ def main():
         # Download results as CSV
         csv = results_df.to_csv(index=False)
         st.download_button(
-            label="📥 Download Results (CSV)",
+            label="Download Results (CSV)",
             data=csv,
             file_name="send_results.csv",
             mime="text/csv"
@@ -570,7 +569,7 @@ def send_all_emails(
     log_area = st.empty()
     results = []
 
-    st.info(f"🚀 Sending {len(df_send)} emails with {send_delay}s delay...")
+    st.info(f"Sending {len(df_send)} emails with {send_delay}s delay...")
 
     for idx, row in df_send.iterrows():
         email = row[email_column]
@@ -580,10 +579,10 @@ def send_all_emails(
         if not row["valid_email"]:
             results.append({
                 "email": email,
-                "status": "⚠️ Invalid Email",
+                "status": "Invalid Email",
                 "error_message": "Invalid email format"
             })
-            log_area.info(f"[{row_num}] ⚠️ Invalid: {email}")
+            log_area.info(f"[{row_num}] Invalid: {email}")
             continue
 
         # Build personalization data
@@ -617,26 +616,26 @@ def send_all_emails(
             if success:
                 results.append({
                     "email": email,
-                    "status": "✅ Sent",
+                    "status": "Sent",
                     "error_message": ""
                 })
-                log_area.info(f"[{row_num}/{len(df_send)}] ✅ Sent to {email}")
+                log_area.info(f"[{row_num}/{len(df_send)}] Sent to {email}")
             else:
                 results.append({
                     "email": email,
-                    "status": "❌ Failed",
+                    "status": "Failed",
                     "error_message": error_msg
                 })
-                log_area.warning(f"[{row_num}/{len(df_send)}] ❌ Failed: {email} - {error_msg}")
+                log_area.warning(f"[{row_num}/{len(df_send)}] Failed: {email} - {error_msg}")
 
         except Exception as e:
             error_msg = f"Exception: {str(e)[:100]}"
             results.append({
                 "email": email,
-                "status": "❌ Failed",
+                "status": "Failed",
                 "error_message": error_msg
             })
-            log_area.error(f"[{row_num}/{len(df_send)}] ❌ Error: {email} - {error_msg}")
+            log_area.error(f"[{row_num}/{len(df_send)}] Error: {email} - {error_msg}")
 
         # Progress update
         progress = min(1.0, (idx + 1) / max(1, len(df_send)))
@@ -648,7 +647,7 @@ def send_all_emails(
 
     # Final summary
     st.session_state.send_results = results
-    st.success("✅ Bulk send complete!")
+    st.success("Bulk send complete!")
 
 
 if __name__ == "__main__":
