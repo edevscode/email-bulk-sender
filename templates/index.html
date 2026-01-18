@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Email Sender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <h2 class="h2">Gmail Configuration</h2>
+          <div class="info">
+            <div class="info-title">App Password Required:</div>
+            <div class="info-body">
+              <div>1. Go to myaccount.google.com/security</div>
+              <div>2. Enable 2-Step Verification if needed</div>
+              <div>3. Generate App Password (Mail, Windows/Mac/Linux)</div>
+              <div>4. Copy the 16-character password below</div>
+            </div>
+          </div>
+
+          <label class="label">Your Gmail Address</label>
+          <input id="fromEmail" class="input" type="email" placeholder="your.email@gmail.com" />
+
+          <label class="label">App Password</label>
+          <input id="appPassword" class="input" type="password" placeholder="16-character password" />
+
+          <div class="divider"></div>
+
+          <h2 class="h2">Email Settings</h2>
+          <label class="label">Delay between emails (seconds)</label>
+          <input id="sendDelay" class="input" type="range" min="1" max="10" value="3" />
+          <div class="range-value"><span id="sendDelayValue">3</span></div>
+
+          <label class="label">Maximum emails per run</label>
+          <input id="maxEmails" class="input" type="number" min="10" max="1000" value="150" />
+
+          <label class="checkbox">
+            <input id="enableDedup" type="checkbox" checked />
+            <span>Deduplicate emails</span>
+          </label>
+
+          <div class="divider"></div>
+
+          <h2 class="h2">Email Format</h2>
+          <label class="checkbox">
+            <input id="isHtml" type="checkbox" />
+            <span>Send as HTML</span>
+          </label>
+
+          <label class="checkbox">
+            <input id="darkMode" type="checkbox" />
+            <span>Dark mode</span>
+          </label>
+
+          <label class="label">Optional Signature</label>
+          <textarea id="signature" class="textarea" placeholder="Best regards,&#10;Your Name" rows="4"></textarea>
+
+          <div class="divider"></div>
+
+          <button id="saveConfig" class="btn btn-secondary" type="button">Save</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="main-inner">
+          <h1 class="h1">Bulk Email Sender</h1>
+          <div class="subtitle">Send personalized emails to multiple recipients safely with one click.</div>
+
+          <div class="grid-2">
+            <section class="card">
+              <h2 class="h2">Compose Email</h2>
+              <label class="label">Subject</label>
+              <input id="subject" class="input" type="text" placeholder="e.g., Join Our Team - Opportunity" />
+            </section>
+
+            <section class="card">
+              <h2 class="h2">Attachments &amp; Data</h2>
+              <label class="label">Attach Files</label>
+              <input id="attachments" class="input" type="file" multiple />
+              <div id="attachmentsList" class="muted"></div>
+            </section>
+          </div>
+
+          <section class="card">
+            <label class="label">Email Body</label>
+            <textarea id="body" class="textarea" placeholder="Dear {{name}},&#10;&#10;We are excited to connect with {{company}}..." rows="10"></textarea>
+            <div class="info" style="margin-top: 12px;">
+              <div class="info-body">
+                <strong>Template Variables:</strong> You can use <code>{{name}}</code>, <code>{{first_name}}</code>, <code>{{company}}</code>, <code>{{email}}</code> if those columns exist in your Excel file.
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 class="h2">Recipients (Excel)</h2>
+            <label class="label">Upload Excel File (.xlsx)</label>
+            <input id="excel" class="input" type="file" accept=".xlsx" />
+
+            <div id="excelStatus" class="status"></div>
+
+            <div id="emailColumnBlock" class="hidden">
+              <label class="label">Select the email column</label>
+              <select id="emailColumn" class="select"></select>
+              <button id="setEmailColumn" class="btn btn-secondary" type="button" style="margin-top: 10px;">Apply</button>
+            </div>
+
+            <div id="personalizeBlock" class="hidden" style="margin-top: 10px;">
+              <label class="checkbox">
+                <input id="enablePersonalize" type="checkbox" />
+                <span id="personalizeLabel">Personalize greeting</span>
+              </label>
+            </div>
+
+            <div id="recipientSelection" class="hidden" style="margin-top: 16px;">
+              <div class="subheader">Select Recipients</div>
+
+              <div class="grid-3" style="align-items: end;">
+                <button id="selectAll" class="btn btn-secondary" type="button">Select All</button>
+                <button id="deselectAll" class="btn btn-secondary" type="button">Deselect All</button>
+                <div class="metric">
+                  <div class="metric-label">Selected</div>
+                  <div class="metric-value" id="selectedMetric">0/0</div>
+                </div>
+              </div>
+
+              <label class="label" style="margin-top: 12px;">Search emails:</label>
+              <input id="search" class="input" type="text" placeholder="Type email to filter..." />
+
+              <div class="muted" style="margin-top: 8px;"><strong>Check boxes below to select recipients:</strong></div>
+
+              <div id="emailsGrid" class="emails-grid"></div>
+
+              <details class="expander" style="margin-top: 16px;">
+                <summary>Preview Data (first 5 rows)</summary>
+                <div id="dataPreview" class="table-wrap"></div>
+              </details>
+            </div>
+          </section>
+
+          <div class="grid-2">
+            <button id="previewBtn" class="btn btn-secondary" type="button">Preview</button>
+            <button id="sendBtn" class="btn btn-primary" type="button">Send All</button>
+          </div>
+
+          <section class="card" style="margin-top: 16px;">
+            <h2 class="h2">Schedule Send</h2>
+            <label class="label">Send at</label>
+            <input id="scheduleAt" class="input" type="datetime-local" />
+            <div class="grid-2" style="margin-top: 12px;">
+              <button id="scheduleBtn" class="btn btn-secondary" type="button">Schedule</button>
+              <button id="cancelScheduleBtn" class="btn btn-secondary" type="button">Cancel</button>
+            </div>
+            <div id="scheduleStatus" class="status"></div>
+          </section>
+
+          <section id="previewSection" class="card hidden" style="margin-top: 16px;"></section>
+
+          <section id="sendProgress" class="card hidden" style="margin-top: 16px;">
+            <h2 class="h2">Sending</h2>
+            <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+            <div style="margin-top: 12px;">
+              <button id="stopBtn" class="btn btn-secondary" type="button">Stop</button>
+            </div>
+            <div id="logArea" class="log-area"></div>
+          </section>
+
+          <section id="resultsSection" class="card hidden" style="margin-top: 16px;"></section>
+        </div>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

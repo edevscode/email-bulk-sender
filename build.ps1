@@ -29,16 +29,21 @@ python -m PyInstaller `
   --name "BulkEmailSender" `
   --onefile `
   --console `
-  --collect-all streamlit `
   --collect-all pandas `
   --collect-all openpyxl `
+  --collect-all fastapi `
+  --collect-all uvicorn `
+  --collect-all jinja2 `
   --collect-submodules email `
   --hidden-import email.mime.multipart `
   --hidden-import email.mime.base `
   --hidden-import email.mime.text `
   --hidden-import email.utils `
   --hidden-import email.encoders `
-  --add-data "$projectRoot\app.py;." `
+  --add-data "$projectRoot\server.py;." `
+  --add-data "$projectRoot\email_core.py;." `
+  --add-data "$projectRoot\templates;templates" `
+  --add-data "$projectRoot\static;static" `
   "$projectRoot\launcher.py"
 
 if ($LASTEXITCODE -ne 0) {

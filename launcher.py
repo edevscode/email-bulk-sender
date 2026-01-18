@@ -36,33 +36,28 @@ def wait_for_http_ready(url: str, timeout=30) -> bool:
     return False
 
 def main() -> None:
-    os.environ["STREAMLIT_GLOBAL_DEVELOPMENT_MODE"] = "false"
-    os.environ["STREAMLIT_SERVER_PORT"] = "8501"
-    os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
-    os.environ["STREAMLIT_SERVER_BASE_URL_PATH"] = ""
-    app_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app.py")
-    sys.argv = [
-        "streamlit",
-        "run",
-        app_path,
-        "--global.developmentMode=false",
-        "--server.address=0.0.0.0",
-        "--server.port=8501",
-        "--server.baseUrlPath=",
-        "--server.headless=true",
-        "--browser.gatherUsageStats=false",
-    ]
+    os.environ.setdefault("BES_HOST", "0.0.0.0")
+    os.environ.setdefault("BES_PORT", "8501")
+    host = os.environ.get("BES_HOST", "0.0.0.0")
+    port = int(os.environ.get("BES_PORT", "8501"))
 
     def open_browser():
-        if wait_for_http_ready("http://127.0.0.1:8501/_stcore/health"):
-            webbrowser.open("http://127.0.0.1:8501")
+        if wait_for_http_ready(f"http://127.0.0.1:{port}/health"):
+            webbrowser.open(f"http://127.0.0.1:{port}")
             return
-        webbrowser.open("http://127.0.0.1:8501")
+        webbrowser.open(f"http://127.0.0.1:{port}")
 
     threading.Thread(target=open_browser, daemon=True).start()
-    from streamlit.web import cli as stcli
+    import uvicorn
 
-    sys.exit(stcli.main())
+    sys.exit(
+        uvicorn.run(
+            "server:app",
+            host=host,
+            port=port,
+            log_level="info",
+        )
+    )
 
 
 if __name__ == "__main__":
